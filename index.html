@@ -1,0 +1,115 @@
+<!DOCTYPE HTML>
+<html>
+    <head>
+        <title>素数クイズ</title>
+        <meta charset='utf-8'>
+        <meta http-equiv='X-UA-Compatible' content='IE=edge'>
+        <meta name='viewport' content='width=device-width, initial-scale=1'>
+    </head>
+    <body>
+        <h1>素数クイズ</h1>
+        <div id="question"></div>
+        <button onclick="checkAnswer(true)">素数</button>
+        <button onclick="checkAnswer(false)">素数でない</button>
+        <div id="result"></div>
+        <div id="timer"></div>
+        <button id="nextButton" onclick="startQuiz()" style="display:none">次へ</button>
+        <div id="explanation"></div>
+        <div id="score"></div>
+
+
+        <script>            
+            let currentNumber;
+            let timer;
+            let correctAnswers=0;
+            let totalQuestions=0;
+
+            function generateNumber(){
+                const possibleNumbers=[];
+                for(let i=1; i<=10000; i++){
+                    if(i%2 !== 0 && i%5 !== 0){
+                        possibleNumbers.push(i);
+                    }
+                }
+
+                const randomIndex=Math.floor(Math.random()*possibleNumbers.length);
+                return possibleNumbers[randomIndex];
+            }
+
+            function isPrime(num){
+                if(num<=1)return false;
+                for(let i=2; i<=Math.sqrt(num);i++){
+                    if(num%i===0)return false;
+                }
+                return true;
+            }
+
+            function getFactors(num){
+                let factors=[];
+                for(let i=2; i<= num; i++){
+                    while(num % i ===0){
+                        factors.push(i);
+                        num /= i;
+                    }
+                }
+                return factors;
+            }
+
+            function checkAnswer(userAnswer){
+                const isNumberPrime=isPrime(currentNumber);
+                totalQuestions++;
+
+                if(userAnswer===isNumberPrime){
+                    document.getElementById('result').innerText='正解！';
+                    correctAnswers++;
+                    }else{
+                    document.getElementById('result').innerText='残念...';
+
+                    if (!isNumberPrime){
+                        const factors=getFactors(currentNumber);
+                        document.getElementById('explanation').innerText = `${currentNumber}=${factors.join('×')}`;
+                    }else{
+                        document.getElementById('explanation').innerText='';
+                    }
+                }
+
+                const accuracy=(correctAnswers/totalQuestions)*100;
+                document.getElementById('score').innerText=`正解数 ${correctAnswers}/${totalQuestions}　　(正解率 ${accuracy.toFixed(2)}%)`;
+
+                document.getElementById('nextButton').style.display='inline';
+                clearInterval(timer);
+            }
+
+            function startQuiz(){
+                currentNumber=generateNumber();
+                document.getElementById('question').innerText=currentNumber;
+                document.getElementById('result').innerText='';
+                document.getElementById('nextButton').style.display='none';
+                startTimer();
+            }
+
+            function startTimer(){
+                let timeLeft=10;
+                document.getElementById('result').innerText=`残り時間 ${timeLeft}秒`;
+
+                timer=setInterval(()=>{
+                    timeLeft--;
+                    document.getElementById('result').innerText=`残り時間 ${timeLeft}秒`;
+                    
+                    if(timeLeft<=0){
+                        clearInterval(timer);
+                        totalQuestions++;
+                        document.getElementById('result').innerText='時間切れ';
+                        document.getElementById('nextButton').style.display='inline';
+                        document.getElementById('nextButton').onclick=startQuiz;
+                    }
+                },1000);
+            }
+
+            window.onload=function(){
+                startQuiz();
+            }
+
+        </script>
+    </body>
+</html>
